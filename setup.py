@@ -9,8 +9,8 @@ with open("requirements.txt", "r", encoding="utf-8") as f:
 setup(
     name="dpydialog",
     version="1.0.0",
-    author="Fluery",
-    author_email="me@fluery.dev", 
+    author="The-Naomi-Developers",
+    author_email="starrysparklez@naomi.win", 
     description="A simple, typed library for creating components and interactive dialogs based on discord.py.",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -30,7 +30,7 @@ setup(
     ],
     
     packages=find_packages(
-        include=["dpydialogue", "dpydialogue.*"]
+        include=["dpydialog", "dpydialog.*"]
     ), 
     install_requires=requirements,
     python_requires=">=3.7",
@@ -38,6 +38,6 @@ setup(
     include_package_data=False,
 
     keywords="discord, dialogue, discord.py, ui, gui",
-    # license="MIT",
+    license="MIT",
     zip_safe=False,
 )
