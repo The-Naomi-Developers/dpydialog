@@ -27,6 +27,8 @@ class DButton(BaseComponent, discord.ui.Button):
         sku_id (int, optional): SKU ID for the button. Defaults to None.
         action (Union[StageAction, CallbackType], optional): The action to execute when clicked. Defaults to None.
         extras (Dict[str, Any], optional): Additional data to store with the button. Defaults to None.
+        operator_ids: (List[int], optional):
+            IDs of users allowed to use this component. If None, then everyone can use it. Default to None.
 
     Raises:
         ValueError: When attempting to use a StageAction outside of a Stage class context.
@@ -44,9 +46,11 @@ class DButton(BaseComponent, discord.ui.Button):
         sku_id: Optional[int] = None,
         action: Optional[Union[StageAction, CallbackType]] = None,
         extras: Optional[Dict[str, Any]] = None,
+        operator_ids: Optional[List[int]] = None,
     ):
         self._action = action
         self._extras = extras
+        self._operator_ids = operator_ids
 
         super().__init__(
             style=style,

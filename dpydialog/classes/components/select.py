@@ -24,6 +24,8 @@ class DSelect(BaseComponent, discord.ui.Select):
         action (Optional[Union[StageAction, CallbackType]], optional):
             Callback function or stage action to execute when a selection is made. Defaults to None.
         extras (Optional[Dict[str, Any]], optional): Additional data to store with the component. Defaults to None.
+        operator_ids: (List[int], optional):
+            IDs of users allowed to use this component. If None, then everyone can use it. Default to None.
 
     Raises:
         ValueError: If StageAction is used outside of a Stage class context.
@@ -40,9 +42,11 @@ class DSelect(BaseComponent, discord.ui.Select):
         row: Optional[int] = None,
         action: Optional[Union[StageAction, CallbackType]] = None,
         extras: Optional[Dict[str, Any]] = None,
+        operator_ids: Optional[List[int]] = None,
     ):
         self._action = action
         self._extras = extras
+        self._operator_ids = operator_ids
 
         super().__init__(
             custom_id=custom_id,

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Awaitable, Callable
+from typing import Any, Awaitable, Callable, Sequence
 
 import discord
 
@@ -23,3 +23,6 @@ class IStage(ABC):
 
     @abstractmethod
     def set_close_callback(self, callback: CallbackType) -> None: ...
+
+    @abstractmethod
+    def set_operator_ids(self, ids: Sequence[int]) -> None: ...
