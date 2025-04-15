@@ -95,7 +95,7 @@ class Dialog:
         interaction: discord.Interaction,
         allowed_mentions: Optional[discord.AllowedMentions] = MISSING,
         delete_after: Optional[float] = None,
-        suppress_embeds: bool = MISSING,
+        suppress_embeds: bool = False,
         files: Sequence[discord.File] = MISSING,
         ephemeral: bool = False,
     ):
@@ -120,7 +120,7 @@ class Dialog:
         self,
         allowed_mentions: Optional[discord.AllowedMentions] = MISSING,
         delete_after: Optional[float] = None,
-        suppress_embeds: bool = MISSING,
+        suppress_embeds: bool = False,
         files: Sequence[discord.File] = MISSING,
         ephemeral: bool = False,
     ):

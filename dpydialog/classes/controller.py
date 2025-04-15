@@ -20,7 +20,7 @@ class DialogController:
         components: StageComponents,
         allowed_mentions: Optional[discord.AllowedMentions] = MISSING,
         delete_after: Optional[float] = None,
-        suppress_embeds: bool = MISSING,
+        suppress_embeds: bool = False,
         files: Sequence[discord.File] = MISSING,
         ephemeral: bool = False,
     ) -> None:
@@ -43,8 +43,8 @@ class DialogController:
                 view=components.view,
                 allowed_mentions=allowed_mentions,
                 delete_after=delete_after,
-                suppress_embeds=suppress_embeds,
-                files=files,
+                suppress_embeds=suppress_embeds or MISSING,
+                attachments=files,
             )
 
     async def close(self, interaction: discord.Interaction) -> None:
