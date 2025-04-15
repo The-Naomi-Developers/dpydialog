@@ -23,7 +23,7 @@ class SimpleClient(discord.Client):
 
     async def setup_hook(self):
         self.tree.copy_global_to(guild=MY_GUILD)
-        # await self.tree.sync(guild=MY_GUILD)
+        await self.tree.sync(guild=MY_GUILD)
 
 
 bot = SimpleClient()
@@ -47,10 +47,6 @@ async def show_results(i: discord.Interaction, result: dict):
     await i.edit_original_response(content="The roles have been given.")
 
 
-async def show_error(i: discord.Interaction, err: DialogException):
-    await i.response.send_message(f"An error occured: {err}")
-
-
 @bot.tree.command(name="add-roles")
 async def add_role(i: discord.Interaction):
     # Since the "from_legacy_ctx" method isn't ready to use yet, you should
@@ -59,7 +55,7 @@ async def add_role(i: discord.Interaction):
     dialog = Dialog.from_interaction(i)
 
     dialog.set_success_callback(show_results)
-    dialog.set_error_callback(show_error)
+    dialog.set_operator_ids({i.user.id})
 
     dialog.add_stage(
         Stage(
@@ -92,7 +88,7 @@ async def add_role(i: discord.Interaction):
         )
     )
 
-    await dialog.send()
+    await dialog.send(ephemeral=True)
 
 
 bot.run("...")
