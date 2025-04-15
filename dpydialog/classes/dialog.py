@@ -24,6 +24,7 @@ class Dialog:
         self._stages: List[IStage] = []
         self._result: Dict[str, Any] = {}
         self._current_stage_index = 0
+        self._operator_ids: Optional[Sequence[int]] = None
 
     @classmethod
     def from_interaction(cls, interaction: discord.Interaction) -> "Dialog":
@@ -32,6 +33,9 @@ class Dialog:
     @classmethod
     def from_legacy_ctx(cls, ctx: commands.Context) -> "Dialog":
         raise NotImplementedError("This method requires an Interaction Adapter.")
+
+    def set_operator_ids(self, ids: Sequence[int]) -> "Dialog":
+        self._operator_ids = ids
 
     def set_success_callback(
         self, function: Callable[[discord.Interaction, Dict[str, Any]], Awaitable[None]]
@@ -48,6 +52,7 @@ class Dialog:
         if not isinstance(stage, IStage):
             raise ValueError("Stage class must derive from `IStage`.")
 
+        stage.set_operator_ids(self._operator_ids)
         stage.set_back_callback(self._to_previous_stage)
         stage.set_next_callback(self._to_next_stage)
         stage.set_close_callback(self._close_dialogue)
