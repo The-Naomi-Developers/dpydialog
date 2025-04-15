@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Awaitable, Callable, Dict, Union
+from typing import Any, Awaitable, Callable, Dict, Optional, Sequence, Union
 
 import discord
 
@@ -21,3 +21,15 @@ class IComponent(ABC):
 
     @abstractmethod
     def _replace_function(self, function: CallbackType): ...
+
+    @abstractmethod
+    def _set_keyname(self, keyname: str) -> None: ...
+
+    @abstractmethod
+    def get_keyname(self) -> Optional[str]: ...
+
+    @abstractmethod
+    def set_operator_ids(self, ids: Sequence[int]) -> None: ...
+
+    @abstractmethod
+    def get_operator_ids(self) -> Optional[Sequence[int]]: ...
