@@ -1,6 +1,9 @@
-from typing import Any, Awaitable, Callable, Dict, Optional, Sequence, Union
+import inspect
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Sequence, Union
 
 import discord
+
+from dpydialog.errors import NotAllowedToInteract, ShouldBeCoroutine, StageActionOutsideDialog
 
 from .component import BaseComponent
 from ...data import StageAction
@@ -68,10 +71,18 @@ class DRoleSelect(BaseComponent, discord.ui.RoleSelect):
         self._action = function
 
     async def callback(self, interaction) -> None:
-        if callable(self._action):
-            await self._action(interaction, self)
-        else:
-            raise ValueError(
-                f"You should not use the {self._action.__class__.__name__} as "
-                "`action` outside of the Stage-class."
+        if isinstance(self._action, StageAction):
+            raise StageActionOutsideDialog(
+                f"You should not use the `StageAction` as "
+                "`action` outside of the `Stage` class.",
+                stage_keyname=self._parent_keyname,
             )
+
+        if not inspect.iscoroutinefunction(self._action):
+            raise ShouldBeCoroutine(stage_keyname=self._parent_keyname)
+
+        if interaction.user.id not in self._operator_ids:
+            raise NotAllowedToInteract(stage_keyname=self._parent_keyname)
+
+        await self._action(interaction, self)
+
