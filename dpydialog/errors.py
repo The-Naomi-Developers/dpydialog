@@ -21,3 +21,6 @@ class NotAllowedToInteract(DialogException):
 
 class DialogHasNoStages(DialogException):
     """Raised when a `Dialog` is sent without `Stage` classes."""
+
+class ValidationError(DialogException):
+    """Raised when the validation function response isn't `True`."""
