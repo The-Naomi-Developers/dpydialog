@@ -1,9 +1,10 @@
-from typing import Any, Awaitable, Callable, Dict, List
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Sequence
 
 import discord
 from discord.ext import commands
+from discord.abc import MISSING
 
-from ..errors import DialogException
+from ..errors import DialogException, DialogHasNoStages
 
 from ..data import StageComponents
 from .controller import DialogController
@@ -89,12 +90,45 @@ class Dialog:
 
         await self._render_current_stage(interaction)
 
-    async def _render_current_stage(self, interaction: discord.Interaction):
+    async def _render_current_stage(
+        self,
+        interaction: discord.Interaction,
+        allowed_mentions: Optional[discord.AllowedMentions] = MISSING,
+        delete_after: Optional[float] = None,
+        suppress_embeds: bool = MISSING,
+        files: Sequence[discord.File] = MISSING,
+        ephemeral: bool = False,
+    ):
+        if len(self._stages) < 1:
+            raise DialogHasNoStages()
+
         components: StageComponents = self._stages[
             self._current_stage_index
         ].get_components()
 
-        await self._controller.render(interaction, components)
+        await self._controller.render(
+            interaction,
+            components,
+            allowed_mentions=allowed_mentions,
+            delete_after=delete_after,
+            suppress_embeds=suppress_embeds,
+            files=files,
+            ephemeral=ephemeral,
+        )
 
-    async def send(self):
-        await self._render_current_stage(self._controller.get_interaction())
+    async def send(
+        self,
+        allowed_mentions: Optional[discord.AllowedMentions] = MISSING,
+        delete_after: Optional[float] = None,
+        suppress_embeds: bool = MISSING,
+        files: Sequence[discord.File] = MISSING,
+        ephemeral: bool = False,
+    ):
+        await self._render_current_stage(
+            self._controller.get_interaction(),
+            allowed_mentions=allowed_mentions,
+            delete_after=delete_after,
+            suppress_embeds=suppress_embeds,
+            files=files,
+            ephemeral=ephemeral,
+        )
