@@ -20,51 +20,6 @@ class SimpleClient(discord.Client):
 bot = SimpleClient()
 
 
-def _info_about_author(i: discord.Interaction) -> str:
-    """
-    [Unused in current implementation]
-    Creates a formatted string containing information about the user who triggered the interaction.
-
-    Args:
-        i: The Discord interaction object
-
-    Returns:
-        A formatted string containing user information
-    """
-    user = i.user
-
-    return "\n".join(
-        [
-            f"**About {user.mention}**",
-            f"- name: {user.name}",
-            f"- id: `{user.id}`",
-            f"- created at: <t:{round(user.created_at.timestamp())}:R>",
-        ]
-    )
-
-
-def _info_about_server(i: discord.Interaction) -> str:
-    """
-    [Unused in current implementation]
-    Creates a formatted string containing information about the server where the interaction occurred.
-
-    Args:
-        i: The Discord interaction object
-
-    Returns:
-        A formatted string containing server information
-    """
-    guild = i.guild
-
-    return "\n".join(
-        [
-            f"**About {guild.name}**",
-            f"- id: `{guild.id}`",
-            f"- created at: <t:{round(guild.created_at.timestamp())}:R>",
-        ]
-    )
-
-
 async def show_modal_data(i: discord.Interaction, modal: DModal):
     """
     Callback handler for modal submission - sends a greeting message with the user's input.
