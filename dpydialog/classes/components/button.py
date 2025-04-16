@@ -3,7 +3,12 @@ from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
 import discord
 
-from dpydialog.errors import NotAllowedToInteract, ShouldBeCoroutine, StageActionOutsideDialog
+from dpydialog.errors import (
+    DialogException,
+    NotAllowedToInteract,
+    ShouldBeCoroutine,
+    StageActionOutsideDialog,
+)
 
 from .component import BaseComponent
 from ...data import StageAction
@@ -50,10 +55,12 @@ class DButton(BaseComponent, discord.ui.Button):
         action: Optional[Union[StageAction, CallbackType]] = None,
         extras: Optional[Dict[str, Any]] = None,
         operator_ids: Optional[List[int]] = None,
+        on_error_callback: Callable[[discord.Interaction, DialogException], Awaitable[None]] = None,
     ):
         self._action = action
         self._extras = extras
         self._operator_ids = operator_ids
+        self._on_error = on_error_callback
 
         super().__init__(
             style=style,
@@ -84,6 +91,15 @@ class DButton(BaseComponent, discord.ui.Button):
             raise ShouldBeCoroutine(stage_keyname=self._parent_keyname)
 
         if interaction.user.id not in self._operator_ids:
-            raise NotAllowedToInteract(stage_keyname=self._parent_keyname)
+            err = NotAllowedToInteract(
+                "The current user is not allowed to interact with the component.",
+                allowed_ids=self._operator_ids,
+                user_id=interaction.user.id,
+                stage_keyname=self._parent_keyname,
+            )
+            if self._on_error:
+                await self._on_error(interaction, err)
+                return
+            raise err
 
         await self._action(interaction, self)
