@@ -1,5 +1,6 @@
 import discord
 from dpydialog import DRoleSelect
+from dpydialog.errors import NotAllowedToInteract
 
 MY_GUILD = discord.Object(id=1078657744090959912)  # Replace with your server ID
 
@@ -13,7 +14,7 @@ class SimpleClient(discord.Client):
 
     async def setup_hook(self):
         self.tree.copy_global_to(guild=MY_GUILD)
-        # await self.tree.sync(guild=MY_GUILD)
+        await self.tree.sync(guild=MY_GUILD)
 
 
 bot = SimpleClient()
@@ -48,6 +49,12 @@ async def update_message(i: discord.Interaction, select: DRoleSelect):
         )
 
     await i.response.edit_message(content="\n\n---\n\n".join(result))
+
+
+async def not_allowed(i: discord.Interaction, err: NotAllowedToInteract):
+    await i.response.send_message(
+        ":x: Hey, who are you?? It's not your interaction, isn't it?"
+    )
 
 
 @bot.tree.command(name="info")

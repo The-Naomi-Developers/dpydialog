@@ -1,5 +1,6 @@
 import discord
 from dpydialog import DUserSelect
+from dpydialog.errors import NotAllowedToInteract
 
 MY_GUILD = discord.Object(id=1078657744090959912)  # Replace with your server ID
 
@@ -48,6 +49,12 @@ async def update_message(i: discord.Interaction, select: DUserSelect):
     await i.response.edit_message(content="\n\n---\n\n".join(result))
 
 
+async def not_allowed(i: discord.Interaction, err: NotAllowedToInteract):
+    await i.response.send_message(
+        ":x: Hey, who are you?? It's not your interaction, isn't it?"
+    )
+
+
 @bot.tree.command(name="info")
 async def show_info(i: discord.Interaction):
     """
@@ -59,7 +66,9 @@ async def show_info(i: discord.Interaction):
     view.add_item(
         DUserSelect(
             action=update_message,
-            max_values=5
+            max_values=5,
+            operator_ids=[i.user.id],  # only the interaction author is allowed to use it
+            on_error_callback=not_allowed,
         )
     )
     await i.response.send_message(content="Select some users", view=view)

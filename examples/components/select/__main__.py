@@ -1,5 +1,6 @@
 import discord
 from dpydialog import DSelect
+from dpydialog.errors import NotAllowedToInteract
 
 MY_GUILD = discord.Object(id=1078657744090959912)  # Replace with your server ID
 
@@ -80,6 +81,12 @@ async def update_message(i: discord.Interaction, select: DSelect):
         return await i.message.delete()
 
     await i.response.edit_message(content=content)
+
+
+async def not_allowed(i: discord.Interaction, err: NotAllowedToInteract):
+    await i.response.send_message(
+        ":x: Hey, who are you?? It's not your interaction, isn't it?"
+    )
 
 
 @bot.tree.command(name="info")
