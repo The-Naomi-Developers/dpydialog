@@ -1,4 +1,6 @@
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Awaitable, Callable, Dict, Optional, Sequence
+
+import discord
 
 from ...interfaces.icomponent import IComponent
 
@@ -7,6 +9,7 @@ class BaseComponent(IComponent):
     _extras: Optional[Dict[str, Any]] = None
     _parent_keyname: Optional[str] = None
     _operator_ids: Optional[Sequence[int]] = None
+    _on_error: Callable[[discord.Interaction, Any], Awaitable[None]] = None
 
     def get_extras(self) -> Optional[Dict[str, Any]]:
         return self._extras
@@ -25,3 +28,8 @@ class BaseComponent(IComponent):
 
     def get_operator_ids(self) -> Optional[Sequence[int]]:
         return self._operator_ids
+
+    def set_error_callback(
+        self, callback: Callable[[discord.Interaction, Any], Awaitable[None]]
+    ) -> None:
+        self._on_error = callback
