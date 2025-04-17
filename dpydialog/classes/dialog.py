@@ -1,9 +1,10 @@
-from typing import Any, Awaitable, Callable, Dict, List
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Sequence
 
 import discord
 from discord.ext import commands
+from discord.abc import MISSING
 
-from ..errors import DialogException
+from ..errors import DialogException, DialogHasNoStages
 
 from ..data import StageComponents
 from .controller import DialogController
@@ -24,6 +25,7 @@ class Dialog:
         self._stages: List[IStage] = []
         self._result: Dict[str, Any] = {}
         self._current_stage_index = 0
+        self._operator_ids: Optional[Sequence[int]] = None
 
     @classmethod
     def from_interaction(cls, interaction: discord.Interaction) -> "Dialog":
@@ -32,6 +34,9 @@ class Dialog:
     @classmethod
     def from_legacy_ctx(cls, ctx: commands.Context) -> "Dialog":
         raise NotImplementedError("This method requires an Interaction Adapter.")
+
+    def set_operator_ids(self, ids: Sequence[int]) -> "Dialog":
+        self._operator_ids = ids
 
     def set_success_callback(
         self, function: Callable[[discord.Interaction, Dict[str, Any]], Awaitable[None]]
@@ -48,6 +53,7 @@ class Dialog:
         if not isinstance(stage, IStage):
             raise ValueError("Stage class must derive from `IStage`.")
 
+        stage.set_operator_ids(self._operator_ids)
         stage.set_back_callback(self._to_previous_stage)
         stage.set_next_callback(self._to_next_stage)
         stage.set_close_callback(self._close_dialogue)
@@ -84,12 +90,45 @@ class Dialog:
 
         await self._render_current_stage(interaction)
 
-    async def _render_current_stage(self, interaction: discord.Interaction):
+    async def _render_current_stage(
+        self,
+        interaction: discord.Interaction,
+        allowed_mentions: Optional[discord.AllowedMentions] = MISSING,
+        delete_after: Optional[float] = None,
+        suppress_embeds: bool = False,
+        files: Sequence[discord.File] = MISSING,
+        ephemeral: bool = False,
+    ):
+        if len(self._stages) < 1:
+            raise DialogHasNoStages()
+
         components: StageComponents = self._stages[
             self._current_stage_index
         ].get_components()
 
-        await self._controller.render(interaction, components)
+        await self._controller.render(
+            interaction,
+            components,
+            allowed_mentions=allowed_mentions,
+            delete_after=delete_after,
+            suppress_embeds=suppress_embeds,
+            files=files,
+            ephemeral=ephemeral,
+        )
 
-    async def send(self):
-        await self._render_current_stage(self._controller.get_interaction())
+    async def send(
+        self,
+        allowed_mentions: Optional[discord.AllowedMentions] = MISSING,
+        delete_after: Optional[float] = None,
+        suppress_embeds: bool = False,
+        files: Sequence[discord.File] = MISSING,
+        ephemeral: bool = False,
+    ):
+        await self._render_current_stage(
+            self._controller.get_interaction(),
+            allowed_mentions=allowed_mentions,
+            delete_after=delete_after,
+            suppress_embeds=suppress_embeds,
+            files=files,
+            ephemeral=ephemeral,
+        )

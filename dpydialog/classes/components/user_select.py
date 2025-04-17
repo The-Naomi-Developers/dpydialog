@@ -1,6 +1,14 @@
-from typing import Any, Awaitable, Callable, Dict, Optional, Sequence, Union
+import inspect
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Sequence, Union
 
 import discord
+
+from dpydialog.errors import (
+    DialogException,
+    NotAllowedToInteract,
+    ShouldBeCoroutine,
+    StageActionOutsideDialog,
+)
 
 from .component import BaseComponent
 from ...data import StageAction
@@ -28,6 +36,8 @@ class DUserSelect(BaseComponent, discord.ui.UserSelect):
         action (Optional[Union[StageAction, CallbackType]], optional):
             Callback function or stage action to execute when a selection is made. Defaults to None.
         extras (Optional[Dict[str, Any]], optional): Additional data to store with the component. Defaults to None.
+        operator_ids: (List[int], optional):
+            IDs of users allowed to use this component. If None, then everyone can use it. Default to None.
 
     Raises:
         ValueError: If StageAction is used outside of a Stage class context.
@@ -44,9 +54,13 @@ class DUserSelect(BaseComponent, discord.ui.UserSelect):
         default_values: Optional[DefaultValuesType] = None,
         action: Optional[Union[StageAction, CallbackType]] = None,
         extras: Optional[Dict[str, Any]] = None,
+        operator_ids: Optional[List[int]] = None,
+        on_error_callback: Callable[[discord.Interaction, DialogException], Awaitable[None]] = None,
     ):
         self._action = action
         self._extras = extras
+        self._operator_ids = operator_ids
+        self._on_error = on_error_callback
 
         super().__init__(
             custom_id=custom_id,
@@ -64,11 +78,27 @@ class DUserSelect(BaseComponent, discord.ui.UserSelect):
     def _replace_function(self, function: CallbackType) -> None:
         self._action = function
 
-    async def callback(self, interaction) -> None:
-        if callable(self._action):
-            await self._action(interaction, self)
-        else:
-            raise ValueError(
-                f"You should not use the {self._action.__class__.__name__} as "
-                "`action` outside of the Stage-class."
+    async def callback(self, interaction: discord.Interaction) -> None:
+        if isinstance(self._action, StageAction):
+            raise StageActionOutsideDialog(
+                f"You should not use the `StageAction` as "
+                "`action` outside of the `Stage` class.",
+                stage_keyname=self._parent_keyname,
             )
+
+        if not inspect.iscoroutinefunction(self._action):
+            raise ShouldBeCoroutine(stage_keyname=self._parent_keyname)
+
+        if interaction.user.id not in self._operator_ids:
+            err = NotAllowedToInteract(
+                "The current user is not allowed to interact with the component.",
+                allowed_ids=self._operator_ids,
+                user_id=interaction.user.id,
+                stage_keyname=self._parent_keyname,
+            )
+            if self._on_error:
+                await self._on_error(interaction, err)
+                return
+            raise err
+
+        await self._action(interaction, self)

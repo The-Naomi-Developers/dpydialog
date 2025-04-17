@@ -1,4 +1,4 @@
-from typing import Any, Awaitable, Callable, List, Optional, Union
+from typing import Any, Awaitable, Callable, List, Optional, Sequence, Union
 
 import discord
 
@@ -71,6 +71,10 @@ class Stage(IStage):
         self._back_callback: CallbackType = None
         self._next_callback: CallbackType = None
         self._close_callback: CallbackType = None
+        self._operator_ids: Optional[Sequence[int]] = None
+
+    def set_operator_ids(self, ids: Sequence[int]) -> None:
+        self._operator_ids = ids
 
     def set_back_callback(self, callback: CallbackType) -> None:
         self._back_callback = callback
@@ -116,6 +120,7 @@ class Stage(IStage):
         view = discord.ui.View(timeout=self._timeout)
 
         for component in self._components:
+            component.set_operator_ids(self._operator_ids)
             view.add_item(component)
 
         return StageComponents(content=self._content, embeds=self._embeds, view=view)

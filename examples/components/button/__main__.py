@@ -1,5 +1,6 @@
 import discord
 from dpydialog import DButton
+from dpydialog.errors import NotAllowedToInteract
 
 MY_GUILD = discord.Object(id=1078657744090959912)  # Replace with your server ID
 
@@ -72,6 +73,12 @@ async def show_server_info(i: discord.Interaction, _: DButton):
     await i.response.edit_message(content=_info_about_server(i))
 
 
+async def not_allowed(i: discord.Interaction, err: NotAllowedToInteract):
+    await i.response.send_message(
+        ":x: Hey, who are you?? It's not your interaction, isn't it?"
+    )
+
+
 @bot.tree.command(name="info")
 async def show_info(i: discord.Interaction):
     """
@@ -95,7 +102,8 @@ async def show_info(i: discord.Interaction):
             label="About yourself",
             emoji="🕺",
             action=show_author_info,
-            row=0
+            row=0,
+            on_error_callback=not_allowed
         )
     )
     view.add_item(
@@ -103,7 +111,8 @@ async def show_info(i: discord.Interaction):
             label="About the server",
             emoji="🌐",
             action=show_server_info,
-            row=0
+            row=0,
+            on_error_callback=not_allowed
         )
     )
     view.add_item(
@@ -112,6 +121,7 @@ async def show_info(i: discord.Interaction):
             emoji="🛜",
             url="https://google.com",
             row=2
+            # The `on_error_callback` argument is not needed for `url` buttons
         )
     )
     view.add_item(
@@ -119,7 +129,8 @@ async def show_info(i: discord.Interaction):
             label="Close",
             emoji="❌",
             action=lambda inter, button: inter.message.delete(),
-            row=1
+            row=1,
+            on_error_callback=not_allowed
         )
     )
     await i.response.send_message(content=first_message, view=view)
